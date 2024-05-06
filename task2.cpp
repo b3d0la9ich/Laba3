@@ -149,7 +149,6 @@ bool Poklington(int n, int F, int R, const vector<int>& ProstMnUnik, int t) {
 
 bool GOST(int t, int q1, int& p) {
     p = 0;
-
     while (true) {
         int N1 = ceil(pow(2, t - 1) / q1);
         int N2 = ceil(pow(2, t - 1) * 0/ (q1));
