@@ -3,239 +3,157 @@
 #include <cmath>
 #include <ctime>
 #include <random>
-#include <map>
-
 using namespace std;
 
-int getRandomNumber(int min, int max); // Функция getRandomNumber генерирует случайное число в заданном диапазоне [min, max].
-void Eratosthenes(vector<int>& PrimeNums); // Это классический алгоритм поиска простых чисел до заданного предела. Он используется для заполнения вектора PrimeNums простыми числами от 2 до 500.
-int modPow(int a, int q, int RandNum); // Эта функция реализует операцию возведения числа в степень по модулю. Она используется в тесте Миллера-Рабина и других местах.
-int Canonical(int n, vector<int>& qi); // Эта функция разлагает число n - 1 на каноническое разложение, а также формирует вектор qi с делителями числа.
-int Eiler(int p); // Эта функция вычисляет значение функции Эйлера, которая представляет собой количество взаимно простых чисел для заданного числа p.
-bool TestMiller(int n, int t, vector<int>& qi); // Этот тест проверяет число на простоту с использованием критерия простоты Миллера-Рабина. Он использует случайные числа и каноническое разложение числа n - 1.
-int NOD(int a, int b); // Это наибольший общий делитель
-int CanonicalF(int n, vector<int>& qi, int F, int& R); // Эта функция используется для вычисления значений параметров F и R, которые затем используются в других частях кода, таких как тест Поклингтона.
-bool TestPoklingtona(int n, int t, vector<int>& qi, int F, int R); // Этот тест также проверяет число на простоту, используя алгоритм Поклингтона. Он также использует каноническое разложение числа.
-bool GOST(int t, int q1); // Этот алгоритм реализует проверку числа на простоту согласно стандарту ГОСТ Р 34.10-2001.
-bool VerTest(int RandNum, int t, int R, int F); // Эта функция оценивает вероятность ошибки тестов Миллера-Рабина и Поклингтона, а также учитывает наличие общих делителей для числа.
-void InPut(int RandNum, bool testResult, int k); // Эта функция выводит результаты тестирования чисел, включая само число, результат тестов и количество отвергнутых чисел.
-
-int main() {
-    srand(time(0));
-    vector<int> Prime;
-    Eratosthenes(Prime);
-
-    int t1 = 5;
-    int k = 0;
-    int t = 4;
-    int q1 = 3;
-
-    cout << "Число\tВероятностный тест\tЧисло отвергнутых чисел" << endl;
-    cout << "-------------------------------------------------------" << endl;
-
-    for (int i = 0; i < 10; i++) {
-        vector <int> qi;
-        int F = 1;
-
-        int n = getRandomNumber(2, 500 - 2);
-        int n_minus_1 = n - 1;
-        int R = 1;
-        F = CanonicalF(n_minus_1, qi, F, R);
-
-        bool millerResult = TestMiller(n, t1, qi);
-        bool poklingtonResult = TestPoklingtona(n, t1, qi, R,F);
-
-        if (!millerResult || !poklingtonResult) {
-            k++;
-            i--;
-            continue;
-        }
-        bool gostResult = GOST(t, q1);
-
-        bool veroyatnostResult = VerTest(n, t1, R, F);
-        InPut(n, veroyatnostResult, k);
-
-        if (millerResult && poklingtonResult) {
-            k = 0;
-        }
-    }
-    return 0;
-}
-
-int getRandomNumber(int min, int max) {  //генерация случайного числа в заданном диапазоне
+int Random(int min, int max) {
     return rand() % (max - min + 1) + min;
 }
 
-void Eratosthenes(vector<int>& PrimeNums) {  //решето Эратосфена
-    for (int i = 2; i < 500; i++) { // Заполняем вектор числами от 2 до 500, потому что 1 и 0 - не простые
-        PrimeNums.push_back(i);
+int pow_mod(int a, int x, int p) {
+    int result = 1;
+    a = a % p;
+    while (x > 0) {
+        if (x % 2 == 1) {
+            result = (result * a) % p;
+        }
+        a = (a * a) % p;
+        x /= 2;
     }
+    return result;
+}
 
-    for (int i = 0; i <= sqrt(PrimeNums.size()); i++) {
-        int j = i + 1;
-        while (j < PrimeNums.size()) {
-            if (PrimeNums[j] % PrimeNums[i] == 0) {
-                for (int k = j; k < PrimeNums.size() - 1; k++) { //если чисто составное
-                    PrimeNums[k] = PrimeNums[k + 1]; //сдвигаем влево
+void Eratosphen (vector<int>& ProstCh) {
+    for (int i=2; i<=500; i++) {
+        ProstCh.push_back(i);
+    }
+    
+    for (int i=0; i <= sqrt(ProstCh.size()); i++) {
+        int j = i+1;
+        while (j < ProstCh.size()) {
+            if (ProstCh[j]%ProstCh[i]==0) {
+                for (int k = j; k < ProstCh.size() - 1; k++) {
+                    ProstCh[k] = ProstCh[k + 1];
                 }
-                PrimeNums.pop_back(); //и удаляем последний элемент
+                ProstCh.pop_back();
             }
             else {
-                j++;                  //если простое, идем дальше
+                j++;
             }
         }
     }
 }
 
-int modPow(int a, int q, int RandNum) {  // Функция для возведения в степень по модулю
-    int result = 1; // a - основание q - степень 
-    while (q > 0) {
-        if (q % 2 == 1) {
-            result = (result * a) % RandNum;
-        }
-        a = (a * a) % RandNum;
-        q /= 2;
+int NOD (int a, int b) {
+    if (b == 0) {
+        return a;
     }
-    return result;
+    return NOD(b , a % b);
 }
 
-int Canonical(int n, vector<int>& qi) {//раскладываем число n-1 на каноническое разложение (= m)
-    map<int, int> factors;
-
-    for (int i = 2; i * i <= n; i++) {
-        while (n % i == 0) {
-            factors[i]++;
-            n /= i;
-            qi.push_back(i);// собираем делители
-        }
-    }
-    if (n > 1) {
-        factors[n]++; // добавляем последний делитель, если такой есть
-    }
-
-    // Вычислите каноническую форму n
-    int m = 1;
-    for (const auto& factor : factors) {
-        m *= pow(factor.first, factor.second);
-    }
-
-    return m / 2;
-}
-
-int Eiler(int p) { // определяем количество взаимно простых чисел для p 
+int Eiler(int p) {
     int result = p;
-    for (int i = 2; i * i <= p; i++) { //проходимся до корня из числа
-        if (p % i == 0) { //если число разделилось на i, то мы уменьшаем р на i так как все числа,
-            while (p % i == 0) { // которые делятся на i не являются взаимно простыми с p
+    for (int i = 2; i * i <= p; i++) {
+        if (p % i == 0) {
+            while (p % i == 0)
                 p /= i;
-            }
-            result -= result / i; // из результата вычитаем количество чисел result/i
+            result -= result / i;
         }
     }
-    if (p > 1) { // если п - простое число, которое не разделилось, то оно простое и результатом
-        result -= result / p; // функции будет р-1
-    }
-
+    if (p > 1)
+        result -= result / p;
     return result;
 }
 
-bool TestMiller(int n, int t, vector<int>& qi) {
-    if (n == 2) {
-        return true;
-    }
-    if (n < 2 || n % 2 == 0) {
-        return false;
-    }
-
-    int n_minus_1 = n - 1;
-    int m = Canonical(n_minus_1, qi);
-
-    if (n_minus_1 = 2 * m) {
-        for (int j : qi) {
-            int result;
-            for (int i = 0; i < t; i++) {
-                int a = getRandomNumber(2, n - 1); //случайное число a в диапазоне от 2 до n-1
-
-                if (modPow(a, n_minus_1, n) != 1) { //первое условие
-                    return false;
-                }
-
-                //второе условие
-                int q_part = n_minus_1 / j; //(a^((n-1)/q)) mod n //Выбрать рандомное qi
-                result = modPow(a, q_part, n);
-                if (result != 1){
-                    break;
-                }
+int MillerRazlozh(int m, int n1, const vector<int>& ProstCh, vector<int>& ProstMnUnik, vector<int>& ProstMn) {
+    for (size_t i = 0; i < ProstCh.size(); i++) {
+        int degree = 0;
+        if (n1 % ProstCh[i] == 0) {
+            while (n1 % ProstCh[i] == 0) {
+                n1 /= ProstCh[i];
+                degree += 1;
+                ProstMn.push_back(ProstCh[i]);
             }
-            if (result==1){
-            return false;//если состтавное
-            }
+            ProstMnUnik.push_back(ProstCh[i]);
+            m *= pow(ProstCh[i], degree);
         }
-        
     }
-    return true;
+    return m/2;
 }
 
-int NOD(int a, int b) {
-    if (b == 0) return a;
-    return NOD(b, a % b);
-}
-
-int CanonicalF(int n, vector<int>& qi, int F, int& R) { // вычисление F и R   
-    for (size_t i = qi.size() - 1; i + 1 > 0; i--) {
-        if (F <= sqrt(n) - 1) {
-            F *= qi[i];
+bool Miller(int n, const vector<int>& ProstMnUnik, int t) {
+    if (n == 2) return true;
+    if (n < 2 || n % 2 == 0) return false;
+    bool MillerF1 = false;
+    bool MillerF2 = false;
+    for (int j=0; j<t; j++){
+        int a = Random(2,n-1);
+        if (pow_mod(a,n-1,n) != 1) {
+            MillerF1 = false;
         }
         else {
-            R *= qi[i];
+            MillerF1 = true;
         }
     }
-    return F;
-}
-
-bool TestPoklingtona(int n, int t, vector<int>& qi, int F, int R) {
-    if (n == 2) {
-        return true;
-    }
-    if (n % 2 == 0 || n <= 1){
-        return false;
-    } 
-
-    // Check if n is a very small prime
-    if (n > 2 && n < 10) {
-        return false; // n is not prime if it's a very small prime
-    }
-    int n_minus_1 = n - 1;
-
-    if (n_minus_1 = R*F) {
-        for (int i = 0; i < t; i++) {
-            bool foundNonTrivialSquareRoot = false;
-            for (int q : qi) {
-                int a = getRandomNumber(2, n - 1); // Random number in the range [2, n-1]
-                int result = modPow(a, (n - 1) / q, n);
-
-                if (result != 1 && result != n - 1) {
-                    return false; // If a^((n-1)/q) mod n is not 1 or -1, n is composite
-                }
-                if (result == 1) {
-                    foundNonTrivialSquareRoot = false;
-                    break; // No need to check further for this q
-                }
+    for (size_t i = 0; i < ProstMnUnik.size(); i++) {
+         for (int j=0; j<t; j++){
+            int a = Random(2,n-1);
+            if (pow_mod(a, (n-1)/ProstMnUnik[i], n) != 1) {
+                continue;
             }
-            if (!foundNonTrivialSquareRoot) {
-                return true; // If no non-trivial square root is found for q, n is composite
+            else {
+                MillerF2 = true;
             }
         }
+        if (MillerF1==true && MillerF2==true) return true;
     }
-    return false; // If all q have a non-trivial square root, n is probably prime
+    return false;
 }
 
-bool GOST(int t, int q1) {
-    int p = 0;
+void PoklingtonRazlozh(int n, int& F, int& R, const vector<int>& ProstMn) {
+    for (size_t i = ProstMn.size() - 1; i + 1 > 0; i--) {
+        if (F <= sqrt(n) - 1) {
+            F *= ProstMn[i];
+        }
+        else {
+            R *= ProstMn[i];
+        }
+    }
+}
+
+bool Poklington(int n, int F, int R, const vector<int>& ProstMnUnik, int t) {
+    if (n == 2 || n==5) return true;
+    if (n < 2 || n % 2 == 0) return false;
+    bool PoklingF1 = false;
+    bool PoklingF2 = false;
+    for (int j=0; j < t; j++) {
+        int a = Random(2,n-1);
+        if (pow_mod(a,n-1,n) != 1) {
+            PoklingF1 = false;
+        }
+        else {
+            PoklingF1 = true;
+        }
+        for (size_t i = 0; i < ProstMnUnik.size(); i++) {
+            if (pow_mod(a, (n-1)/ProstMnUnik[i], n) == 1) {
+                PoklingF2 = false;
+                break;
+            }
+            else {
+                PoklingF2 = true;
+            }
+        }
+        if (PoklingF1==true && PoklingF2==true) return true;
+    }
+    return false;
+}
+
+bool GOST(int t, int q1, int& p) {
+    p = 0;
 
     while (true) {
         int N1 = ceil(pow(2, t - 1) / q1);
-        int N2 = ceil(pow(2, t - 1) * 0 / (q1));
+        int N2 = ceil(pow(2, t - 1) * 0/ (q1));
+
         double N = N1 + N2;
         if (static_cast<int>(round(N)) % 2 != 0) {
             N++;
@@ -243,7 +161,7 @@ bool GOST(int t, int q1) {
 
         for (int u = 0; pow(2, t) >= (N + u) * q1 + 1; u += 2) {
             p = (N + u) * q1 + 1;
-            if ((modPow(2, p - 1, p) == 1) && (modPow(2, N + u, p) != 1)) {
+            if ((pow_mod(2, p - 1, p) == 1) && (pow_mod(2, N + u, p) != 1)) {
                 return true;
             }
         }
@@ -251,29 +169,67 @@ bool GOST(int t, int q1) {
     return false;
 }
 
-bool VerTest(int RandNum, int t, int R, int F) {
-    if (NOD(R, F) == 1) { // если число простое, то вычисляем вероятность ошибки тестов
-        /*вычисляем функцию эйлера и делим на RandNum-1 для оценки теста миллера и погклингтона
-        умножаем на t так как это количество итераций тестов
-        из конечного результата вычитаем вероятности*/
-        double verMiller = (static_cast<double>(Eiler(RandNum - 1)) / static_cast<double>(RandNum - 1)) * t;
-        double verPoklington = (static_cast<double>(Eiler(RandNum)) / static_cast<double>(RandNum)) * t;
+bool VerTest(int n, int t, int R, int F) {
+    if (NOD(R,F) == 1) {
+        double verMiller = (static_cast<double>(Eiler(n-1))/static_cast<double>(n-1)) * t;
+        double verPoklington = (static_cast<double>(Eiler(n))/static_cast<double>(n)) * t;
         double result = 1 - verMiller - verPoklington;
         return (result <= 0.1);
     }
     else {
-        /*Если нод не равен 1, то поклингтон бесполезен*/
-        double verMiller = (static_cast<double>(Eiler(RandNum - 1)) / static_cast<double>(RandNum - 1)) * t;
+        double verMiller = (static_cast<double>(Eiler(n-1))/static_cast<double>(n-1)) * t;
         double result = 1 - verMiller;
         return (result <= 0.1);
     }
 }
 
-void InPut(int RandNum, bool testResult, int k) { //выводим результаты
-    if (testResult && k <= 10) {
-        cout << RandNum << " \t\t" << "+" << " \t\t" << k << endl;
+void InPut(int n, bool VerTest, int k) {
+    if (VerTest && k <= 6) {
+        cout << n << " \t\t" << "+" << " \t\t" << k << endl;
     }
     else {
-        cout << RandNum << " \t\t" << "-" << " \t\t" << k << endl;
+        cout << n << " \t\t" << "-" << " \t\t" << k << endl;
     }
+}
+
+int main() {
+    srand(time(0));
+
+    vector<int> ProstCh;
+    Eratosphen(ProstCh);
+    int t = 5;
+    int t1 = 6;
+    int q1 = 5;
+    int k = 0;
+    cout << "Число|\tРезультат проверки|\tКоличество отвергнутых чисел" << endl;
+    cout << "-------------------------------------------------------" << endl;
+    for (int i = 0; i < 10; i++) {
+        vector<int> ProstMnUnik;
+        vector<int> ProstMn;
+        int n = Random(2, 500 - 2);
+        int n1 = n - 1;
+        int m = 1;
+        m = MillerRazlozh(m, n1, ProstCh, ProstMnUnik, ProstMn);
+        int F = 1;
+        int R = 1;
+        PoklingtonRazlozh(n, F, R, ProstMn);
+
+        if (m*2 + 1 != n || F*R + 1 != n || !Miller(n, ProstMnUnik, t) || !Poklington(n, F, R, ProstMnUnik, t)) {
+            k++;
+            i--;
+            continue;
+        }
+        
+        
+
+        InPut(n, VerTest(n, t, R, F), k);
+
+        if (Miller(n, ProstMnUnik, t) && Poklington(n, F, R, ProstMnUnik, t)) {
+            k=0;
+        }
+    }
+    int p;  
+    bool GOSTResult = GOST(t1, q1, p);
+    cout << "Значение переменной теста госта: ";
+    cout << p << endl;
 }
