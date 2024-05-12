@@ -13,8 +13,6 @@ int random(int min, int max){
 int pow_mod(int a, int x, int p){
     // Инициализация переменной res для хранения результата
     int res = 1;
-    // Переводим a в вид, не превышающий p
-    a = a % p;
     // Пока степень x больше 0
     while (x > 0)
     {
@@ -41,7 +39,7 @@ void erat(vector<int>& prime){
     }
     // Используем алгоритм Решето Эратосфена
     // Перебираем все элементы вектора prime
-    for(int i = 0; i <= prime.size(); i++)
+    for(int i = 0; i <= sqrt(prime.size()); i++)
     {
         // Инициализируем индекс j, который начинается с i + 1
         int j = i + 1;
@@ -76,16 +74,15 @@ int NoD(int a, int b){
     return NoD(b, a % b);
 }
 
-int eiler(int p){
+int eiler(int p){ // Определяем количество взаимно простых чисел для p 
     // Инициализация переменной res значением p
     int res = p;
     // Перебор всех чисел от 2 до квадратного корня из p
     for(int i = 2; i <= sqrt(p); i++)
     {
-        // Проверка, делится ли p на текущее число i без остатка
-        if (p % i == 0)
+        if (p % i == 0) //если число разделилось на i, то мы уменьшаем р на i так как все числа,
         {
-            // Если делится, выполняется цикл, пока p делится на i без остатка
+            // которые делятся на i не являются взаимно простыми с p
             while(p % i == 0)
             {
                 p /= i;
@@ -94,12 +91,12 @@ int eiler(int p){
             res -= res / i;
         }
     }
-    // Если после цикла остался остаток p, отличный от 1, обновляем значение res
+    // если p - простое число, которое не разделилось, то оно простое и результатом
+    // функции будет р-1
     if(p > 1)
     {
         res -= res / p;
     }
-    // Возвращаем значение функции Эйлера
     return res;
 }
 
@@ -148,7 +145,7 @@ bool miler(int n, const vector<int>& primeMnUnick, int t)
     bool milerF1 = false;
     bool milerF2 = false;
     // Проверка условий Миллера t раз
-    for(int j = 0; j < t; j++)
+    for(int j = 0; j < t; j++)  
     {
         // Генерация случайного числа в диапазоне от 2 до n-1
         int a = random(2, n - 1);
@@ -271,7 +268,7 @@ bool poklin(int n, int F, int R, const vector<int>& primeMnUnick, int t){
 bool gost(int t, int q1, int& p)
 {
     p = 0; // Инициализация p
-    while(true) // Бесконечный цикл
+    while(true)
     {
         // Рассчитываем значения n1 и n2
         int n1 = ceil(pow(2, t - 1) / q1);
