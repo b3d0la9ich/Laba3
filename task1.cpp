@@ -22,7 +22,7 @@ double secondFragm(double x){
 }
 
 double thirdFragm(double x){
-    double res = log2(x - 1);
+    double res = log2(x) - 1;
     if (abs(res) < 0.000001) {
         res = 0.0;
     }
@@ -30,8 +30,7 @@ double thirdFragm(double x){
 }
 
 double fourthFragm(double x){
-    double k = -0.5;
-    double res = k * (x - 9);
+    double res = -2 * x + 18;
     if (abs(res) < 0.000001) {
         res = 0.0;
     }
@@ -41,7 +40,7 @@ double fourthFragm(double x){
 int main () {
     double xStart = -6.0;
     double xEnd = 9.0;
-    double dx = 0.1;
+    double dx = 0.5;
 
     ofstream outfile("Output.txt");
     if (!outfile.is_open()) {
@@ -62,7 +61,7 @@ int main () {
         if (x >= 2.0 && x < 8.0){
             outfile << setw(10)  << x << setw(10) << thirdFragm(x) << endl;
         }
-        if (x >= 8.0 && x < 9.0){
+        if (x >= 8.0 && x <= 9.0){
             outfile << setw(10)  << x << setw(10) << fourthFragm(x) << endl;
         }
     }
