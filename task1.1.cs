@@ -35,8 +35,7 @@ class Program
 
     static double FourthFragment(double x)
     {
-        double k = -0.5;
-        double res = k * (x - 9);
+        double res = -2 * x + 18;
         if (Math.Abs(res) < 0.000001)
         {
             res = 0.0;
@@ -70,7 +69,7 @@ class Program
                 {
                     outfile.WriteLine($"{x,10:F6} {ThirdFragment(x),10:F6}");
                 }
-                if (x >= 8.0 && x < 9.0)
+                if (x >= 8.0 && x <= 9.0)
                 {
                     outfile.WriteLine($"{x,10:F6} {FourthFragment(x),10:F6}");
                 }
