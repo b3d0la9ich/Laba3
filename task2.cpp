@@ -131,42 +131,61 @@ bool TestMiller(int n, int t, vector<int>& qi) {
 }
 
 
-int CanonicalF(int n, vector<int>& qi, int F, int& R) { // вычисление F и R   
+// Функция для вычисления F и R в канонической форме числа n
+int CanonicalF(int n, vector<int>& qi, int F, int& R) {
+    // Проходим по вектору qi в обратном порядке
     for (size_t i = qi.size() - 1; i + 1 > 0; i--) {
+        // Если F меньше или равно корню из n минус 1, то умножаем F на qi[i]
         if (F <= sqrt(n) - 1) {
             F *= qi[i];
         }
+        // Иначе умножаем R на qi[i]
         else {
             R *= qi[i];
-            if (R % 2 == 0) { // добавил
+            // Если R делится нацело на 2, то увеличиваем R на 1
+            if (R % 2 == 0) {
                 R++;
             }
         }
     }
+    // Возвращаем F
     return F;
 }
 
+// Функция для тестирования числа на простоту по тесту Поклингтона
 bool TestPoklingtona(int n, int t, vector<int>& qi, int F, int R) {
-    if (n == 2 || n==5) return true;
+    // Если число n равно 2 или 5, то оно является простым
+    if (n == 2 || n == 5) return true;
+    // Если число n меньше 2 или четное, то оно не является простым
     if (n < 2 || n % 2 == 0) return false;
+
+    // Флаг для отслеживания условия теста Поклингтона
     bool PoklingF2 = false;
-    for (int j=0; j < t; j++) {
-        int a = getRandomNumber(2,n-1);
-        if (modPow(a,n-1,n) != 1) {
+
+    // Проходимся по количеству итераций t
+    for (int j = 0; j < t; j++) {
+        // Генерируем случайное число a в диапазоне от 2 до n-1
+        int a = getRandomNumber(2, n - 1);
+        // Проверяем первое условие теста Поклингтона: a^(n-1) mod n должно быть не равно 1
+        if (modPow(a, n - 1, n) != 1) {
             return false;
         }
-    
+
+        // Проверяем второе условие теста Поклингтона для всех делителей qi
         for (size_t i = 0; i < qi.size(); i++) {
-            if (modPow(a, (n-1)/qi[i], n) == 1) {
+            // Если a^((n-1)/qi) mod n равно 1, то число n составное
+            if (modPow(a, (n - 1) / qi[i], n) == 1) {
                 PoklingF2 = false;
                 break;
-            }
-            else {
+            } else {
+                // Если условие не выполняется, то число n может быть простым
                 PoklingF2 = true;
             }
         }
-        if (PoklingF2==true) return true;
+        // Если условие выполняется хотя бы для одного делителя, то число n простое
+        if (PoklingF2 == true) return true;
     }
+    // Если условие не выполнилось ни разу, то число n составное
     return false;
 }
 
@@ -224,43 +243,78 @@ void InPut(int RandNum, bool testResult, int k, int gostResult, bool millerResul
     cout << k << setw(20) << gostResult << setw(20) << millerResult << setw(20) << poklingtonResult <<  endl; 
 }
 int main() {
+    // Инициализация генератора случайных чисел текущим временем, чтобы получить разные последовательности случайных чисел при каждом запуске программы
     srand(time(0));
+
+    // Создание вектора для хранения простых чисел
     vector<int> Prime;
+
+    // Заполнение вектора простыми числами с помощью решета Эратосфена
     Eratosthenes(Prime);
 
+    // Количество итераций для тестов Миллера-Рабина и Поклингтона
     int t1 = 5;
-    int k = 0; // количество отвегнутых чисел в тесте
+
+    // Количество отвергнутых чисел в тесте
+    int k = 0;
+
+    // Количество итераций для теста ГОСТа
     int t = 9;
+
+    // Неизвестный параметр для теста ГОСТа
     int q1 = 23;
 
+    // Вывод заголовка таблицы
     cout << "Число\tВероятностный тест\tЧисло отвергнутых чисел\t\tГОСТ\t\t\tMiller\t\tPoklington" << endl;
     cout << "_________________________________________________________________________________________________" << endl;
 
+    // Главный цикл для генерации и тестирования 10 простых чисел
     for (int i = 0; i < 10; i++) {
+        // Создание вектора для хранения простых делителей числа n-1
         vector <int> qi;
+
+        // Инициализация начального значения для F
         int F = 1;
 
+        // Генерация случайного числа n в диапазоне от 2 до 500 - 2
         int n = getRandomNumber(2, 500 - 2);
+
+        // Вычисление n - 1
         int n_minus_1 = n - 1;
+
+        // Инициализация начального значения для R
         int R = 1;
+
+        // Вычисление F и R в канонической форме числа n
         F = CanonicalF(n_minus_1, qi, F, R);
 
+        // Выполнение теста Миллера-Рабина для числа n
         bool millerResult = TestMiller(n, t1, qi);
-        bool poklingtonResult = TestPoklingtona(n, t1, qi, R,F);
 
+        // Выполнение теста Поклингтона для числа n
+        bool poklingtonResult = TestPoklingtona(n, t1, qi, R, F);
+
+        // Если тесты не прошли, увеличиваем счетчик отвергнутых чисел и повторяем итерацию
         if (!millerResult || !poklingtonResult) {
             k++;
             i--;
             continue;
         }
+
+        // Генерация простого числа по алгоритму ГОСТа
         int gostResult = GOST(t, q1);
 
+        // Проверка вероятности ошибки тестов Миллера-Рабина и Поклингтона
         bool veroyatnostResult = VerTest(n, t1, R, F);
-        InPut(n, veroyatnostResult, k , gostResult , millerResult, poklingtonResult);
 
+        // Вывод результатов тестов и генерации простого числа по ГОСТу
+        InPut(n, veroyatnostResult, k, gostResult, millerResult, poklingtonResult);
+
+        // Если оба теста прошли успешно, сбрасываем счетчик отвергнутых чисел
         if (millerResult && poklingtonResult) {
             k = 0;
         }
     }
+    // Возврат кода успешного завершения программы
     return 0;
 }
