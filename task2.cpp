@@ -3,395 +3,256 @@
 #include <cmath>
 #include <ctime>
 #include <random>
+#include <map>
 
 using namespace std;
 
-int random(int min, int max){
+int getRandomNumber(int min, int max) {  //генерация случайного числа в заданном диапазоне
     return rand() % (max - min + 1) + min;
 }
 
-int pow_mod(int a, int x, int p){
-    // Инициализация переменной res для хранения результата
-    int res = 1;
-    // Пока степень x больше 0
-    while (x > 0)
-    {
-        // Если текущая степень x нечетная
-        if (x % 2 == 1)
-        {
-            // Умножаем res на a и берем остаток от деления на p
-            res = (res * a) % p;
-        }
-        // Возводим a в квадрат и берем остаток от деления на p
-        a = (a * a) % p;
-        // Уменьшаем степень x вдвое
-        x /= 2;
-    }
-    // Возвращаем результат
-    return res;
-}
+void Eratosfen(vector<int>& Prost500) {  //решето Эратосфена
 
-void erat(vector<int>& prime){
-    // Заполняем вектор prime числами от 2 до 500
-    for(int i = 2; i <= 500; i++)
-    {
-        prime.push_back(i);
+    for (int i = 2; i <= 500; i++) { //закидываем все числа от 2 до 500
+        Prost500.push_back(i);
     }
-    // Используем алгоритм Решето Эратосфена
-    // Перебираем все элементы вектора prime
-    for(int i = 0; i <= sqrt(prime.size()); i++)
-    {
-        // Инициализируем индекс j, который начинается с i + 1
+
+    for (int i = 0; i <= sqrt(Prost500.size()); i++) {
         int j = i + 1;
-        // Пока j не достигнет конца вектора prime
-        while(j < prime.size())
-        {
-            // Если текущий элемент prime[j] делится без остатка на prime[i],
-            // это означает, что prime[i] не простое число
-            if(prime[j] % prime[i] == 0)
-            {
-                // Удаляем элемент prime[j] из вектора prime
-                for(int k = j; k < prime.size() - 1; k++)
-                {
-                    prime[k] = prime[k + 1];
+        while (j < Prost500.size()) {
+            if (Prost500[j] % Prost500[i] == 0) {
+                for (int k = j; k < Prost500.size() - 1; k++) {  //если число непростое
+                    Prost500[k] = Prost500[k + 1];               //затираем сдвигом
                 }
-                prime.pop_back();
+                Prost500.pop_back();                             //и удаляем последнюю пустую позицию
             }
-            else
-            {
-                // Если prime[j] не делится на prime[i], увеличиваем j
-                j++;
+            else {
+                j++;                                        //если простое, идем дальше
             }
         }
     }
 }
 
-int NoD(int a, int b){
-    if(b == 0)
-    {
-        return a;
+int modPow(int a, int q, int n) {  // Функция для возведения в степень по модулю
+    int result = 1;
+    while (q > 0) {
+        if (q % 2 == 1) {
+            result = (result * a) % n;
+        }
+        a = (a * a) % n;
+        q /= 2;
     }
-    return NoD(b, a % b);
+    return result;
 }
 
-int eiler(int p){ // Определяем количество взаимно простых чисел для p 
-    // Инициализация переменной res значением p
-    int res = p;
-    // Перебор всех чисел от 2 до квадратного корня из p
-    for(int i = 2; i <= sqrt(p); i++)
-    {
-        if (p % i == 0) //если число разделилось на i, то мы уменьшаем р на i так как все числа,
-        {
-            // которые делятся на i не являются взаимно простыми с p
-            while(p % i == 0)
-            {
-                p /= i;
+int factorizeCanonical(int n, vector<int>& qi) {//раскладываем число n-1 на каноническое разложение (= m)
+    map<int, int> factors;
+
+    for (int i = 2; i * i <= n; i++) {
+        while (n % i == 0) {
+            factors[i]++;
+            n /= i;
+            qi.push_back(i);// собираем делители
+        }
+    }
+    if (n > 1) {
+        factors[n]++; // добавляем последний делитель, если такой есть
+    }
+
+    // Вычислите каноническую форму n
+    int m = 1;
+    for (const auto& factor : factors) {
+        m *= pow(factor.first, factor.second);
+    }
+
+    return m / 2;
+}
+
+// Функция для вычисления значения функции Эйлера φ(n) Для нахождения вероятности
+int phi(int n) {
+    int result = n; // Изначально, φ(n) равно n
+    // Ищем все простые делители n
+    for (int p = 2; p * p <= n; ++p) {
+        if (n % p == 0) {
+            // p - простой делитель, уменьшаем φ(n)
+            while (n % p == 0) {
+                n /= p;
             }
-            // Обновление значения res путем вычитания из него res/i
-            res -= res / i;
+            result -= result / p;
         }
     }
-    // если p - простое число, которое не разделилось, то оно простое и результатом
-    // функции будет р-1
-    if(p > 1)
-    {
-        res -= res / p;
+    // Если n > 1, то оно простое и мы еще не уменьшили φ(n)
+    if (n > 1) {
+        result -= result / n;
     }
-    return res;
+    return result;
 }
 
-int miler_razl(int m, int n1, const vector<int>& prime, vector<int>& primeMnUnick, vector<int>& primeMn){
-    // Перебор простых чисел из вектора prime
-    for(int i = 0; i < prime.size(); i++)
-    {
-        // Инициализация счетчика степени для текущего простого числа
-        int degree = 0;
-        // Проверка, делится ли n1 на текущее простое число без остатка
-        if(n1 % prime[i] == 0)
-        {
-            // Если делится, запускаем цикл, который уменьшает n1 и считает степень числа
-            while(n1 % prime[i] == 0)
-            {
-                n1 /= prime[i];
-                degree++;
-                // Добавление простого числа в вектор primeMn
-                primeMn.push_back(prime[i]);
-            }
-            // Добавление уникального простого числа в вектор primeMnUnick
-            primeMnUnick.push_back(prime[i]);
-            // Обновление m путем умножения на текущее простое число в степени degree
-            m *= pow(prime[i], degree);
-        }
-    }
-    // Возвращение m, разделенного на 2
-    return m/2;
-}
+bool TestMiller(int n, int t, vector<int>& qi) {
+    if (n == 2) return true;
+    if (n < 2 || n % 2 == 0) return false;
 
-bool miler(int n, const vector<int>& primeMnUnick, int t)
-{
-    // Проверка, является ли число 2 простым
-    if(n == 2)
-    {
-        // Если число равно 2, возвращаем true
-        return true;
-    }
-    // Проверка на отрицательные числа, нули и четные числа
-    if(n < 2 || n % 2 == 0)
-    {
-        // Если число меньше 2 или четное, возвращаем false
-        return false;
-    }
-    // Инициализация флагов для условий Миллера
-    bool milerF1 = false;
-    bool milerF2 = false;
-    // Проверка условий Миллера t раз
-    for(int j = 0; j < t; j++)  
-    {
-        // Генерация случайного числа в диапазоне от 2 до n-1
-        int a = random(2, n - 1);
-        // Проверка первого условия Миллера
-        if(pow_mod(a, n - 1, n) != 1)
-        {
-            // Если условие не выполняется, устанавливаем флаг milerF1 в false
-            milerF1 = false;
-        }
-        else
-        {
-            // Если условие выполняется, устанавливаем флаг milerF1 в true
-            milerF1 = true;
-        }
-    }
-    // Перебор простых множителей числа n
-    for(int i = 0; i < primeMnUnick.size(); i++)
-    {
-        // Проверка условий Миллера t раз для каждого простого множителя
-        for(int j = 0; j < t; j++)
-        {
-            // Генерация случайного числа в диапазоне от 2 до n-1
-            int a = random(2, n - 1);
-            // Проверка второго условия Миллера
-            if(pow_mod(a, (n - 1)/primeMnUnick[i], n) != 1)
-            {
-                // Если условие не выполняется, продолжаем перебор
-                continue;
-            }
-            else
-            {
-                // Если условие выполняется, устанавливаем флаг milerF2 в true
-                milerF2 = true;
-            }
-        }
-        // Если оба условия Миллера выполняются, возвращаем true
-        if (milerF1 == true && milerF2 == true)
-        {
-            return true;
-        } 
-    }
-    // Если ни одно из условий Миллера не выполняется, возвращаем false
-    return false;   
-}
-
-void poklin_razl(int n, int& F, int& R, const vector<int>& primeMn){
-    // Начинаем разложение с самого большого простого множителя числа n
-    for(int i = primeMn.size() - 1; i + 1 > 0; i--)
-    {
-        // Если текущий множитель еще должен добавляться в переменную F
-        if(F <= sqrt(n) - 1)
-        {
-            // Умножаем F на текущий простой множитель primeMn[i]
-            F *= primeMn[i];
-        }
-        else
-        {
-            // Если F уже больше корня из n - 1, добавляем множитель в R
-            R *= primeMn[i];
-        }
-    }
-}
-
-bool poklin(int n, int F, int R, const vector<int>& primeMnUnick, int t){
-    // Проверка на числа 2 и 5, которые всегда являются простыми
-    if(n == 2 || n == 5)
-    {
-        return true;
-    }
-    // Проверка на четность и числа меньше 2, они не являются простыми
-    if(n < 2 || n % 2 == 0)
-    {
-        return false;
-    }
+    int n_minus_1 = n - 1;
+    int m = factorizeCanonical(n_minus_1, qi);
+int result, result1;
     
-    // Флаги для проверок
-    bool poklinF1 = false; // Флаг для первого условия теста Поклингтона
-    bool poklinF2 = false; // Флаг для второго условия теста Поклингтона
+    if (n_minus_1 = 2 * m) {
+        for (int j : qi) {
+            for (int i = 0; i < t; i++) {
+                int a = getRandomNumber(2, n - 1); //случайное число a в диапазоне от 2 до n-2
+
+                if (modPow(a, n_minus_1, n) == 1) { //первое условие
+                    result1 = 1;
+                }
+                else return false;
+
+                if (modPow(a, n_minus_1, n) == 1) { //первое условие
+                    result1 = 1;
+                }
+                else return false;
+
+                //второе условие
+                int q_part = n_minus_1 / j; //(a^((n-1)/q)) mod n //Выбрать рандомное qi
+                result1 = modPow(a, q_part, n);
+                if(result != 1 || result1 != 1) break;;
+            }
+        }
+    }
+    return true;
+}
+
+int NOD(int a, int b) {
+    if (b == 0) return a;
+    return NOD(b, a % b);
+}
+
+int factorizeCanonicalFFF(int n, vector<int>& qi, int F, int& R) { // вычисление F и R   
+    for (size_t i = qi.size() - 1; i + 1 > 0; i--) {
+        if (F <= sqrt(n) - 1) {
+            F *= qi[i];
+        }
+        else {
+            R *= qi[i];
+            if(R % 2 !=0){
+                R -=1 ;
+            }
+        }
+    }
+    return F;
+}
+
+
+bool TestPoklingtona(int n, int t, vector<int>& qi, int F, int R) {
+    if (n == 2 || n==5) return true;
+    if (n < 2 || n % 2 == 0) return false;
+
+    bool Proverka = false;
+    for (int j=0; j < t; j++) {
+        int a = getRandomNumber(2,n-1);
+        if (modPow(a,n-1,n) != 1) {
+            return false;
+        }
     
-    // Цикл по числу случайных тестов
-    for(int j = 0; j < t; j++)
-    {
-        // Генерация случайного числа a в диапазоне от 2 до n - 1
-        int a = random(2, n - 1);
-        
-        // Проверка первого условия теста Поклингтона
-        if(pow_mod(a, n - 1, n) != 1)
-        {
-            poklinF1 = false;
-        }
-        else
-        {
-            poklinF1 = true;
-        }
-        
-        // Проверка второго условия теста Поклингтона для каждого делителя из primeMnUnick
-        for(int i = 0; i < primeMnUnick.size(); i++)
-        {
-            if(pow_mod(a, (n - 1) / primeMnUnick[i], n) == 1)
-            {
-                poklinF2 = false;
+         for (int q : qi) {
+                 if (modPow(a, (n-1)/q, n) == 1){
+                Proverka = false;
                 break;
             }
-            else
-            {
-                poklinF2 = true;
+            else {
+                Proverka = true;
             }
         }
-        
-        // Если оба условия выполняются, возвращаем true
-        if(poklinF1 == true && poklinF2 == true)
-        {
-            return true;
+        if (Proverka==true) return true; //вернёт составное
+    }
+    return false;// вернёт простое
+}
+
+bool GOST(int t, int q1, int& p) {
+    p = 0;
+    while (true) {
+        int N1 = ceil(pow(2, t - 1) / q1);
+        int N2 = ceil(pow(2, t - 1) * 0 / (q1));
+
+        double N = N1 + N2;
+        if (static_cast<int>(round(N)) % 2 != 0) {
+            N++;
+        }
+
+        for (int u = 0; pow(2, t) >= (N + u) * q1 + 1; u += 2) {
+            p = (N + u) * q1 + 1;
+            if ((modPow(2, p - 1, p) == 1) && (modPow(2, N + u, p) != 1)) {
+                return true;
+            }
         }
     }
-    // Если ни для одного случайного теста не выполняется оба условия, возвращаем false
+
     return false;
 }
 
-bool gost(int t, int q1, int& p)
-{
-    p = 0; // Инициализация p
-    while(true)
-    {
-        // Рассчитываем значения n1 и n2
-        int n1 = ceil(pow(2, t - 1) / q1);
-        int n2 = ceil(pow(2, t - 1) * 0 / (q1)); // Значение n2 всегда равно 0
-        double n = n1 + n2; // Общее значение n
+bool TestVeroyatnost(int n, int t, int R, int F) {
 
-        // Если n нечетное, увеличиваем на 1
-        if(static_cast<int>(round(n)) % 2 != 0)
-        {
-            n++;
-        }
-
-        // Поиск простого числа p, удовлетворяющего условиям ГОСТ 34.10-2001
-        for(int u = 0; pow(2, t) >= (n + u) * q1 + 1; u += 2)
-        {
-            p = (n + u) * q1 + 1; // Вычисление значения p
-
-            // Проверка условий ГОСТ 34.10-2001 для простого числа p
-            if((pow_mod(2, p - 1, p) == 1) && (pow_mod(2, n + u, p) != 1))
-            {
-                return true; // Если условия выполняются, возвращаем true
-            }
-        }
+    if (NOD(R, F) == 1) {
+        double VerMiller = (static_cast<double>(phi(n - 1)) / static_cast<double>(n - 1)) * t;
+        double VerPoglint = (static_cast<double>(phi(n)) / static_cast<double>(n)) * t;
+        double result = 1 - VerMiller - VerPoglint;
+        return(result <= 0.1);
     }
-    return false; // Если не удалось найти подходящее простое число, возвращаем false
-}
-
-bool vertest(int n, int t, int R, int F){
-    // Проверяем взаимно простые ли R и F
-    if(NoD(R, F) == 1)
-    {
-        // Рассчитываем вероятность ошибки для Миллера-Рабина
-        double vermiler = (static_cast<double>(eiler(n-1))/static_cast<double>(n-1)) * t;
-        // Рассчитываем вероятность ошибки для теста Поклингтона
-        double verpoklin = (static_cast<double>(eiler(n))/static_cast<double>(n)) * t;
-        // Общая вероятность ошибки
-        double res = 1 - vermiler - verpoklin;
-        // Возвращаем результат проверки
-        return (res <= 0.1);
-    }
-    else
-    {
-        // Если R и F не взаимно простые, рассчитываем только вероятность ошибки для Миллера-Рабина
-        double vermiler = (static_cast<double>(eiler(n-1))/static_cast<double>(n-1)) * t;
-        // Возвращаем результат проверки
-        double res = 1 - vermiler;
-        return (res <= 0.1);
+    else {
+        double VerMiller = static_cast<double>(phi(n - 1)) / static_cast<double>(n) * t;
+        double result = 1 - VerMiller;
+        return(result <= 0.1);
     }
 }
 
-void input(int n, bool vertest, int k){
-    // Проверяем, нужно ли учитывать вероятность ошибки и значение k
-    if(vertest && k <= 6)
-    {
-        // Выводим информацию о параметрах с плюсом, если условия выполнены
+void InPut(int n, bool testResult, int k) {
+    if (testResult && k <= 5) {
         cout << n << " \t\t" << "+" << " \t\t" << k << endl;
     }
-    else
-    {
-        // Выводим информацию о параметрах с минусом, если условия не выполнены
+    else {
         cout << n << " \t\t" << "-" << " \t\t" << k << endl;
     }
 }
 
-int main(){
-    srand(time(0)); // Инициализация генератора случайных чисел
+int main() {
+    srand(time(0));
+    vector<int> Prost500;
+    Eratosfen(Prost500);
 
-    // Создание вектора prime и заполнение его простыми числами до 500
-    vector<int> prime;
-    erat(prime);
-
-    // Установка количества итераций для тестов Миллера-Рабина и Поклингтона
-    int t = 5;
-    int t1 = 6;
-
-    // Установка значения q1 для теста ГОСТ 34.10-2001
-    int q1 = 5;
-
-    // Инициализация счетчика отвергнутых чисел
+    int t1 = 5;
     int k = 0;
+    int p;
+    int t = 7;
+    int q1 = 13;
 
-    // Вывод заголовка таблицы
-    cout << "Число|\tРезультат проверки|\tКоличество отвергнутых чисел" << endl;
+    cout << "Number|\tProbabilistic test|\tCount rejected numbers" << endl;
     cout << "-------------------------------------------------------" << endl;
 
-    // Цикл для проверки 10 случайных чисел
     for (int i = 0; i < 10; i++) {
-        vector<int> primeMnUnick;
-        vector<int> primeMn;
-
-        // Генерация случайного числа n в диапазоне от 2 до 498
-        int n = random(2, 500 - 2);
-        int n1 = n - 1;
-        int m = 1;
-
-        // Разложение числа n-1 на простые множители и вычисление m
-        m = miler_razl(m, n1, prime, primeMnUnick, primeMn);
+        vector <int> qi;
         int F = 1;
+
+        int n = getRandomNumber(2, 500 - 1);
+        int n_minus_1 = n - 1;
         int R = 1;
+        F = factorizeCanonicalFFF(n_minus_1, qi, F, R);
 
-        // Разложение числа n на множители F и R
-        poklin_razl(n, F, R, primeMn);
+        bool millerResult = TestMiller(n, t1, qi);
+        bool poklingtonResult = TestPoklingtona(n, t1, qi, R,F);
 
-        // Проверка условий для применения тестов Миллера-Рабина и Поклингтона
-        if (m*2 + 1 != n || F*R + 1 != n || !miler(n, primeMnUnick, t) || !poklin(n, F, R, primeMnUnick, t)) {
-            k++; // Увеличение счетчика отвергнутых чисел
-            i--; // Уменьшение значения i для повторной проверки
-            continue; // Переход к следующей итерации цикла
+        if (!millerResult || !poklingtonResult) {
+            k++;
+            i--;
+            continue;
         }
+        bool gostResult = GOST(t, q1, p);
 
-        // Вывод информации о числе, результате верификации и количестве отвергнутых чисел
-        input(n, vertest(n, t, R, F), k);
+        bool veroyatnostResult = TestVeroyatnost(n, t1, R, F);
+        InPut(n, veroyatnostResult, k);
 
-        // Сброс счетчика отвергнутых чисел, если все тесты пройдены успешно
-        if (miler(n, primeMnUnick, t) && poklin(n, F, R, primeMnUnick, t)) {
+        if (millerResult && poklingtonResult) {
             k = 0;
         }
     }
-
-    int p; // Переменная для хранения значения простого числа из теста ГОСТ 34.10-2001
-    bool GOSTResult = gost(t1, q1, p); // Вызов функции теста ГОСТ 34.10-2001
-
-    // Вывод значения простого числа из теста ГОСТ 34.10-2001
-    cout << "Значение переменной теста госта: ";
-    cout << p << endl;
+    cout << "GOST: " << p;
+    return 0;
 }
