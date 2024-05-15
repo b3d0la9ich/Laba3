@@ -101,13 +101,12 @@ bool TestMiller(int n, int t, vector<int>& qi) {
         for (int j : qi) {
             bool MillerF1 = false;
             bool MillerF2 = false;
-            int k=0;
+            int k = 0;
             for (int i = 0; i < t; i++) {
                 int a = getRandomNumber(2, n - 2); //случайное число a в диапазоне от 2 до n-2
 
                 if (modPow(a, n_minus_1, n) != 1) { //первое условие
                     return false;
-                
                 }
 
                 //второое условие
@@ -115,14 +114,13 @@ bool TestMiller(int n, int t, vector<int>& qi) {
                 int result = modPow(a, q_part, n);
                 if (result != 1){
                     MillerF2 = true;
-        
                     break;
                 } else {
                     k++;
                 }
 
             }
-            if (k==(t-1)){
+            if (k == (t-1)){
                 return false; //если составное
             }
         }
@@ -261,7 +259,7 @@ int main() {
     // Количество итераций для теста ГОСТа
     int t = 9;
 
-    // Неизвестный параметр для теста ГОСТа
+    // параметр для теста ГОСТа
     int q1 = 23;
 
     // Вывод заголовка таблицы
